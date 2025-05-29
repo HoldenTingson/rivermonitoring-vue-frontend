@@ -1,0 +1,7 @@
+@import "./base.css";
+@import "bootstrap";
+@import "@mdi/font/css/materialdesignicons.min.css";
+@font-face {
+  font-family: "MyFont";
+  src: url("../assets/fonts/unicons-7.woff2") format("woff2");
+}
