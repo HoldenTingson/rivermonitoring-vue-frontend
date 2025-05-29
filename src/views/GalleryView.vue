@@ -3,7 +3,9 @@
     <div class="gallery-header">
       <div class="text">
         <h2>Galeri</h2>
-        <h3>Lihat galeri seputar banjir di Kota Pekanbaru</h3>
+        <h3>
+          Lihat foto seputar aktivitas penanggulangan banjir di Kota Pekanbaru
+        </h3>
       </div>
     </div>
     <div class="gallery-page">

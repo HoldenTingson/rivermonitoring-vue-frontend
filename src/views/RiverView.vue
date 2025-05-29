@@ -2,10 +2,8 @@
   <div class="river">
     <div class="river-header">
       <div class="text">
-        <h2>Sungai</h2>
-        <h3>
-          Lihat daftar sungai dan lokasi pemantauan lainnya di Kota Pekanbaru
-        </h3>
+        <h2>Titik Air</h2>
+        <h3>Lihat daftar lokasi pemantauan titik air di Kota Pekanbaru</h3>
       </div>
     </div>
     <div class="table-controls">

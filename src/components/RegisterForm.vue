@@ -1,6 +1,6 @@
 <template>
   <div class="modal">
-    <div class="form_container">
+    <div class="form_container" ref="modal">
       <i class="uil uil-times form_close" @click="closeRegisterForm"></i>
       <div class="form signup_form">
         <form @submit.prevent="submit">
@@ -23,6 +23,9 @@
             />
             <i class="uil uil-user user"></i>
           </div>
+          <div v-if="usernameError" class="error_message">
+            {{ usernameError }}
+          </div>
           <div class="input_box">
             <input
               v-model="data.password"
@@ -35,6 +38,9 @@
               class="uil uil-eye-slash pw_hide"
               @click="togglePasswordVisibility"
             ></i>
+          </div>
+          <div v-if="passwordError" class="error_message">
+            {{ passwordError }}
           </div>
           <div class="input_box">
             <input
@@ -49,9 +55,13 @@
               @click="togglePasswordVisibility"
             ></i>
           </div>
+          <div v-if="confirmPasswordError" class="error_message">
+            {{ confirmPasswordError }}
+          </div>
           <button type="submit" class="button">Signup Now</button>
           <div class="login_signup">
-            Already have an account? <a href="#" id="login">Login</a>
+            Already have an account?
+            <a href="" @click.prevent="moveToLogin">Login</a>
           </div>
         </form>
       </div>
@@ -60,64 +70,113 @@
 </template>
 
 <script>
-import { reactive, ref } from "vue";
-import { routerKey, useRouter } from "vue-router";
 import Swal from "sweetalert2";
+import { useRouter } from "vue-router";
+
 export default {
+  emits: ["close", "openLoginForm"],
   name: "RegisterForm",
-  setup() {
-    const data = reactive({
-      username: "",
-      password: "",
-      email: "",
-    });
-
-    const router = useRouter();
-
-    const confirm = ref();
-    const validatePassword = () => {
-      return data.password === confirm.value;
+  data() {
+    return {
+      data: {
+        username: "",
+        password: "",
+        email: "",
+      },
+      confirm: "",
+      passwordError: "",
+      confirmPasswordError: "",
+      router: useRouter(),
     };
+  },
+  methods: {
+    validatePassword() {
+      let isValid = true;
 
-    const submit = async () => {
-      if (validatePassword()) {
-        try {
-          const res = await fetch("http://localhost:8080/user/signup", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-          });
-          if (!res.ok) {
-            throw new Error();
-          } else {
-            await Swal.fire({
-              title: "Berhasil!",
-              text: "Berhasil melakukan register",
-              icon: "success",
-              confirmButtonColor: "#2d3e50",
-            });
-            router.go();
-          }
-        } catch (error) {
-          Swal.fire({
-            title: "Gagal!",
-            text: "Email atau username sudah terdaftar!",
-            icon: "error",
+      // Check password length
+      if (!this.data.password) {
+        this.passwordError = "Password is required";
+        isValid = false;
+      } else if (this.data.password.length < 8) {
+        this.passwordError = "Password must be at least 8 characters long";
+        isValid = false;
+      } else if (this.data.password.length > 30) {
+        this.passwordError = "Password cannot exceed 30 characters long";
+        isValid = false;
+      }
+
+      // Check if passwords match
+      if (!this.confirm) {
+        this.confirmPasswordError = "Please confirm your password";
+        isValid = false;
+      } else if (this.data.password !== this.confirm) {
+        this.confirmPasswordError = "Passwords do not match";
+        isValid = false;
+      }
+
+      return isValid;
+    },
+    validateUsername() {
+      let isValid = true;
+
+      // Check password length
+      if (!this.data.username) {
+        this.usernameError = "Username is required";
+        isValid = false;
+      } else if (this.data.username.length < 3) {
+        this.usernameError = "Username must be at least 3 characters long";
+        isValid = false;
+      } else if (this.data.username.length > 20) {
+        this.usernameError = "Username cannot exceed 20 characters long";
+        isValid = false;
+      }
+
+      return isValid;
+    },
+    clearErrors() {
+      this.passwordError = "";
+      this.confirmPasswordError = "";
+      this.usernameError = "";
+    },
+    async submit() {
+      this.clearErrors();
+      const isPasswordVaild = this.validatePassword();
+      const isUsernameValid = this.validateUsername();
+
+      if (!isPasswordVaild || !isUsernameValid) {
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:8080/user/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(this.data),
+        });
+        if (!res.ok) {
+          throw new Error();
+        } else {
+          await Swal.fire({
+            title: "Berhasil!",
+            text: "Berhasil melakukan register",
+            icon: "success",
             confirmButtonColor: "#2d3e50",
+            confirmButtonText: "<div style='color: white'>" + "OK" + "</div>",
           });
-          console.error("Error fetching data:", error);
+          this.router.go();
         }
-      } else {
+      } catch (error) {
         Swal.fire({
           title: "Gagal!",
-          text: "Masukkan password dengan benar!",
+          text: "Email atau username sudah terdaftar!",
           icon: "error",
           confirmButtonColor: "#2d3e50",
+          confirmButtonText: "<div style='color: white'>" + "OK" + "</div>",
         });
+        console.error("Error fetching data:", error);
       }
-    };
-
-    const togglePasswordVisibility = (event) => {
+    },
+    togglePasswordVisibility(event) {
       const getPwInput = event.target.parentElement.querySelector("input");
       if (getPwInput.type === "password") {
         getPwInput.type = "text";
@@ -126,20 +185,43 @@ export default {
         getPwInput.type = "password";
         event.target.classList.replace("uil-eye", "uil-eye-slash");
       }
-    };
-
-    return {
-      data,
-      submit,
-      togglePasswordVisibility,
-      confirm,
-      router,
-    };
-  },
-  methods: {
+    },
     closeRegisterForm() {
       this.$emit("close");
     },
+    moveToLogin() {
+      this.$emit("close");
+      this.$emit("openLoginForm");
+    },
+    closeOnEscape(event) {
+      if (event.key === "Escape") {
+        this.closeRegisterForm();
+        const registerButton = document.querySelector(
+          ".btn.register-button.no-hover-effect"
+        );
+        if (registerButton) {
+          registerButton.blur();
+        }
+      }
+    },
+    handleClickOutside(event) {
+      const sweetAlertContainer = document.querySelector(".swal2-container");
+      if (
+        this.$refs.modal &&
+        !this.$refs.modal.contains(event.target) &&
+        !sweetAlertContainer
+      ) {
+        this.closeRegisterForm();
+      }
+    },
+  },
+  mounted() {
+    document.addEventListener("keydown", this.closeOnEscape);
+    document.addEventListener("click", this.handleClickOutside, true);
+  },
+  unmounted() {
+    document.removeEventListener("keydown", this.closeOnEscape);
+    document.removeEventListener("click", this.handleClickOutside, true);
   },
 };
 </script>
@@ -186,7 +268,7 @@ a {
   position: fixed;
   max-width: 320px;
   width: 100%;
-  top: 12%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(1.1);
   box-shadow: rgba(0, 0, 0, 0.1);
@@ -292,5 +374,10 @@ a {
   font-size: 12px;
   text-align: center;
   margin-top: 15px;
+}
+.error_message {
+  color: #e74c3c;
+  font-size: 11px;
+  margin-top: 5px;
 }
 </style>

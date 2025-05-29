@@ -20,7 +20,6 @@
                 src="/src/assets/line.png"
                 class="line"
                 v-if="category.id === activeCategory"
-                :class="active - icon"
               />
               {{ category.title }}
             </span>

@@ -3,19 +3,19 @@
     <div class="containers">
       <div class="row">
         <div class="footer-col">
-          <h4>address</h4>
+          <h4>alamat</h4>
           <div class="contact-info">
             <div>
               <i class="fas fa-envelope"></i>
-              <span>gobanjir@gmail.com</span>
+              <span>bpbd_riau@yahoo.co.id</span>
             </div>
             <div>
               <i class="fas fa-phone"></i>
-              <span>0838-0960-3672</span>
+              <span>0811-7612-000</span>
             </div>
             <div>
               <i class="fas fa-map-marker-alt"></i>
-              <span>Jalan Belimbing No 101 E</span>
+              <span>Jalan Jendral Sudirman No.438, Pekanbaru, Riau</span>
             </div>
           </div>
         </div>
@@ -23,49 +23,52 @@
           <h4>Discover</h4>
           <ul>
             <li>
-              <RouterLink to="/"><a>home</a></RouterLink>
+              <RouterLink to="/"><a>beranda</a></RouterLink>
             </li>
             <li>
-              <RouterLink to="/river"><a>river</a></RouterLink>
+              <RouterLink to="/river"><a>titik air</a></RouterLink>
             </li>
             <li>
-              <RouterLink to="/news"> <a>news</a></RouterLink>
-            </li>
-            <li>
-              <RouterLink to="/report"> <a>report</a></RouterLink>
+              <RouterLink to="/report"> <a>laporan</a></RouterLink>
             </li>
             <li>
               <RouterLink to="/faq"><a>FAQ</a></RouterLink>
             </li>
             <li>
-              <RouterLink to="/gallery"><a>gallery </a></RouterLink>
+              <RouterLink to="/gallery"><a>galeri</a></RouterLink>
             </li>
           </ul>
         </div>
         <div class="footer-col">
-          <h4>Help</h4>
+          <h4>Bantuan</h4>
           <ul>
-            <li><a href="#">about us</a></li>
-            <li><a href="#">privacy policy</a></li>
-            <li><a href="#">term & conditions</a></li>
+            <li><a href="" @click.prevent>tentang kami</a></li>
+            <li><a href="" @click.prevent>kebijakan privasi</a></li>
+            <li><a href="" @click.prevent>syarat dan ketentuan</a></li>
           </ul>
         </div>
         <div class="footer-col follow-us">
           <h4>follow us</h4>
           <div class="social-links">
-            <a href="#"><font-awesome-icon :icon="['fab', 'facebook-f']" /></a>
-            <a href="#"><font-awesome-icon :icon="['fab', 'twitter']" /></a>
+            <a href="" @click.prevent
+              ><font-awesome-icon :icon="['fab', 'facebook-f']"
+            /></a>
+            <a href="" @click.prevent
+              ><font-awesome-icon :icon="['fab', 'twitter']"
+            /></a>
             <a href="https://www.instagram.com/holdentgsn"
               ><font-awesome-icon :icon="['fab', 'instagram']"
             /></a>
-            <a href="#"><font-awesome-icon :icon="['fab', 'youtube']" /></a>
+            <a href="" @click.prevent
+              ><font-awesome-icon :icon="['fab', 'youtube']"
+            /></a>
           </div>
         </div>
       </div>
       <div class="bottom-row">
         <div class="col-12 text-center">
           <div class="copyright mt-5 pt-5">
-            <p><small>&copy; 2023-2024 All Rights Reserved.</small></p>
+            <p><small>&copy; 2024-2025 All Rights Reserved.</small></p>
           </div>
         </div>
       </div>

@@ -1,28 +1,17 @@
 <template>
   <div class="carousel">
-    <v-carousel cycle hide-delimiters show-arrows="hover">
-      <v-carousel-item
-        v-for="carrousel in carrousels"
-        :key="carrousel.id"
-        :src="`/src/assets/carrousel/${carrousel.image}`"
-        cover
-        class="carousel-item"
-      >
-        <div class="carousel-text">
-          <h1 class="carousel-date">{{ carrousel.date }}</h1>
-          <h1 class="carousel-title">
-            {{ carrousel.title }}
-          </h1>
-          <p class="carousel-desc">
-            {{ carrousel.desc }}
-          </p>
-        </div>
-      </v-carousel-item>
-    </v-carousel>
+    <img class="image-view" src="../assets/carrousel/bpbd.jpg" />
+    <div class="carousel-overlay">
+      <div class="carousel-text">
+        <h1 class="carousel-title">
+          Selamat Datang di Website Go Banjir BPBD Provinsi Riau
+        </h1>
+      </div>
+    </div>
   </div>
   <div class="map-container">
     <div class="header-river">
-      <h2>Status Ketinggian Air Sungai di Setiap Lokasi Pemantauan</h2>
+      <h2>Status Ketinggian Titik Air di Setiap Lokasi Pemantauan</h2>
     </div>
     <div class="search-bar" :class="{ blur: openHistory }">
       <svg
@@ -40,7 +29,7 @@
     <div class="map" :class="{ blur: openHistory }">
       <div style="height: 80vh; width: 100%">
         <l-map
-          ref="map"
+          ref="mapRef"
           v-model:zoom="zoom"
           :center="center"
           :animate="true"
@@ -57,6 +46,7 @@
             :lat-lng="[marker.latitude, marker.longitude]"
             :icon="getMarkerIcon(marker.status)"
             :draggable="false"
+            :class="{ blur: openHistory }"
           >
             <l-popup :auto-pan="true">
               <div v-html="marker.popupContent"></div>
@@ -85,7 +75,7 @@
         <div class="notes-header">Catatan:</div>
         <div class="notes-item">
           - Ketinggian air yang ditampilkan akan diperbarui secara langsung
-          dalam interval waktu lima detik
+          setiap detik
         </div>
         <div class="notes-item">
           - Status ketinggian pada lokasi pemantauan dikatakan bahaya jika
@@ -107,10 +97,331 @@
   </div>
 </template>
 
+<script>
+import "leaflet/dist/leaflet.css";
+import { defineComponent, onMounted, ref, computed, nextTick } from "vue";
+import {
+  LMap,
+  LTileLayer,
+  LIcon,
+  LMarker,
+  LPopup,
+} from "@vue-leaflet/vue-leaflet";
+import "leaflet";
+import History from "@/components/History.vue";
+import Swal from "sweetalert2";
+
+export default defineComponent({
+  name: "Home",
+  setup() {
+    const mapRef = ref(null);
+    const zoom = ref(14);
+    const center = ref([0.5071, 101.4478]);
+    const markers = ref([]);
+    const markerIcon = L.icon({
+      iconUrl: "src/assets/air.png",
+      iconSize: [80, 80],
+    });
+    const openHistory = ref(false);
+    const carrousels = ref([""]);
+    const count = ref();
+    const search = ref("");
+    const river = ref();
+    const id = ref();
+    const statusCheckInterval = ref(null);
+
+    const searchRivers = async () => {
+      if (search.value.trim() === "") return;
+
+      try {
+        const response = await fetch(
+          `http://localhost:8080/river/search?location=${search.value}`,
+          { method: "GET" }
+        );
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+
+        if (
+          data.latitude !== undefined &&
+          data.longitude !== undefined &&
+          !isNaN(data.latitude) &&
+          !isNaN(data.longitude)
+        ) {
+          river.value = data;
+          console.log("✅ Valid river data:", river.value);
+
+          await nextTick(); // Ensure Vue DOM updates
+
+          center.value = [data.latitude, data.longitude];
+          zoom.value = 18; // Adjusted zoom for better centering
+
+          console.log("📍 Updated center:", center.value);
+          console.log("🔍 Updated zoom:", zoom.value);
+
+          // 🌍 Ensure the map centers properly
+          if (mapRef.value && mapRef.value.leafletObject) {
+            const map = mapRef.value.leafletObject;
+
+            // 🛠 Force map to update correctly on first search
+            setTimeout(() => {
+              map.invalidateSize(); // Fixes the half-rendered issue
+              map.setView(center.value, zoom.value);
+            }, 300); // Small delay ensures map is fully ready
+          }
+        } else {
+          throw new Error("Invalid location data received.");
+        }
+      } catch (error) {
+        Swal.fire({
+          title: "Gagal!",
+          text: "Lokasi tidak ditemukan!",
+          icon: "error",
+          confirmButtonColor: "#2d3e50",
+          confirmButtonText: "<div style='color: white'>OK</div>",
+        });
+        console.error("❌ Search error:", error);
+      }
+    };
+
+    // 🔄 Ensure map updates properly when center changes
+    // watchEffect(() => {
+    //   if (mapRef.value && mapRef.value.leafletObject) {
+    //     mapRef.value.leafletObject.setView(center.value, zoom.value);
+    //   }
+    // });
+
+    const ws = new WebSocket("ws://localhost:8080/river/ws");
+
+    ws.onopen = function (event) {
+      console.log("WebSocket connection opened", event);
+    };
+
+    ws.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+      const index = markers.value.findIndex((marker) => marker.id === data.id);
+      if (index !== -1) {
+        const marker = markers.value[index];
+        marker.height = data.height;
+        marker.status = data.status;
+        marker.popupContent = markerPopupContent(marker);
+        markers.value.splice(index, 1, { ...marker });
+      }
+    };
+
+    onMounted(async () => {
+      try {
+        const response = await fetch("http://localhost:8080/carrousel", {
+          method: "GET",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch carrousels");
+        }
+
+        const data = await response.json();
+        carrousels.value = data;
+      } catch (error) {
+        console.error(error);
+      }
+
+      try {
+        // Step 1: Fetch river data
+        const riverResponse = await fetch("http://localhost:8080/river", {
+          method: "GET",
+        });
+
+        if (!riverResponse.ok) {
+          throw new Error("Failed to fetch river data");
+        }
+
+        const riverData = await riverResponse.json();
+
+        // Store data temporarily without creating popupContent yet
+        markers.value = riverData;
+
+        // Step 2: Check sensor statuses for each marker
+        await checkSensorStatuses();
+
+        // Step 3: Now create popup content for each marker
+        markers.value = markers.value.map((marker) => ({
+          ...marker,
+          popupContent: markerPopupContent(marker),
+        }));
+
+        // Step 4: Set up periodic status check every 3 seconds
+        statusCheckInterval.value = setInterval(async () => {
+          await checkSensorStatuses();
+          // Update popup content after each status check
+          markers.value = markers.value.map((marker) => ({
+            ...marker,
+            popupContent: markerPopupContent(marker),
+          }));
+        }, 3000);
+      } catch (error) {
+        console.error("Error fetching river data:", error);
+      }
+
+      await fetch("http://localhost:8080/river/total", {
+        method: "GET",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          count.value = data;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+
+      nextTick(() => {
+        updateMarkerBlur(openHistory.value);
+      });
+    });
+
+    const checkSensorStatuses = async () => {
+      for (const marker of markers.value) {
+        try {
+          const response = await fetch(
+            `http://localhost:8080/river/status/${marker.id}`,
+            {
+              method: "GET",
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            marker.sensor = data.status;
+          }
+        } catch (error) {
+          console.error(
+            `Error checking status for sensor ${marker.id}:`,
+            error
+          );
+        }
+      }
+    };
+
+    const markerPopupContent = (marker) => {
+      return `
+        <div class="marker-popup">
+          <div class="marker-info">
+            <span>Lokasi:</span> ${marker.location}<br>
+            <span>Tinggi:</span> ${marker.height}<br>
+            <span>Status:</span> ${marker.status}<br>
+            <span>Sensor:</span> ${marker.sensor}<br>
+            <span>Histori:</span> <button class="history-button" onclick="openHistoryPopUp('${marker.id}')">Lihat</button>
+          </div>
+      </div>
+        `;
+    };
+
+    const updateMarkerBlur = (isBlurred) => {
+      // Wait for the next tick to ensure the map is rendered
+      nextTick(() => {
+        // Use the ref directly
+        if (mapRef.value) {
+          const mapElement = mapRef.value.$el; // Access the DOM element
+          const markerElements = mapElement.querySelectorAll(
+            ".leaflet-marker-icon"
+          );
+
+          markerElements.forEach((marker) => {
+            if (isBlurred) {
+              marker.style.pointerEvents = "none";
+            } else {
+              marker.style.pointerEvents = "auto";
+            }
+          });
+        }
+      });
+    };
+    window.openHistoryPopUp = (riverId) => {
+      id.value = riverId;
+      openHistory.value = true;
+    };
+
+    const markersWithPopupContent = computed(() => {
+      if (markers.value.length > 0) {
+        return markers.value.map((marker) => ({
+          ...marker,
+          popupContent: markerPopupContent(marker),
+        }));
+      }
+
+      return [];
+    });
+
+    return {
+      zoom,
+      markers,
+      openHistory,
+      markerIcon,
+      markersWithPopupContent,
+      carrousels,
+      count,
+      search,
+      searchRivers,
+      river,
+      center,
+      id,
+      updateMarkerBlur,
+      mapRef,
+    };
+  },
+  computed: {
+    infoMessage() {
+      return `Dari ${this.count} lokasi pemantauan terdapat sebanyak ${this.countBahayaRivers} lokasi pantau yang airnya meluap`;
+    },
+    countBahayaRivers() {
+      return this.markers.filter((marker) => marker.status === "Bahaya").length;
+    },
+    getMarkerIcon() {
+      return function (status) {
+        let iconUrl = "";
+        let iconSize = [60, 60];
+
+        switch (status) {
+          case "Bahaya":
+            iconUrl = "src/assets/red.png";
+            break;
+          case "Siaga":
+            iconUrl = "src/assets/yel.png";
+            break;
+          case "Aman":
+            iconUrl = "src/assets/blue.png";
+            break;
+        }
+
+        return L.icon({
+          iconUrl: iconUrl,
+          iconSize: iconSize,
+        });
+      };
+    },
+  },
+  watch: {
+    openHistory(newVal) {
+      this.updateMarkerBlur(newVal);
+    },
+  },
+  components: {
+    LMap,
+    LTileLayer,
+    LIcon,
+    LMarker,
+    LPopup,
+    History,
+  },
+});
+</script>
+
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 .leaflet-container {
-  transition: transform 0.3s ease-in-out; /* Adjust duration and easing as needed */
+  transition: transform 0.3s ease-in-out;
 }
 .map.blur {
   pointer-events: none;
@@ -124,19 +435,28 @@
   pointer-events: none;
 }
 
-.carousel-item::before {
-  content: "";
+.image-view {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carousel-overlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7); /* Adjust the opacity as needed */
+  background-color: rgba(0, 0, 0, 0.5);
+  pointer-events: none;
 }
+
 .carousel {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 10px;
 }
 
 .carousel-text {
@@ -149,7 +469,7 @@
   color: white;
   margin-left: 15%;
   word-wrap: break-word;
-  width: 800px;
+  width: 900px;
 }
 
 .carousel-date {
@@ -160,7 +480,7 @@
 }
 
 .carousel-title {
-  font-size: 40px;
+  font-size: 50px;
   margin-bottom: 10px;
   font-weight: bold;
 }
@@ -222,7 +542,7 @@
 
 .search-bar button {
   margin-left: -80px;
-  padding: 10px 15px;
+  padding: 10px 20px;
   background-color: #2d3e50;
   border: none;
   cursor: pointer;
@@ -253,9 +573,7 @@
 }
 
 .map {
-  height: calc(
-    100% - 60px
-  ); /* Adjust the height to account for the header and search bar */
+  height: calc(100% - 60px);
 }
 
 .marker-popup {
@@ -349,214 +667,3 @@
   background-color: #06caf9;
 }
 </style>
-
-<script>
-import "leaflet/dist/leaflet.css";
-import { defineComponent, onMounted, ref, computed } from "vue";
-import {
-  LMap,
-  LTileLayer,
-  LIcon,
-  LMarker,
-  LPopup,
-} from "@vue-leaflet/vue-leaflet";
-import "leaflet";
-import History from "@/components/History.vue";
-import Swal from "sweetalert2";
-
-export default defineComponent({
-  name: "Home",
-  setup() {
-    const zoom = ref(14);
-    const center = ref([0.5071, 101.4478]);
-    const markers = ref([]);
-    const markerIcon = L.icon({
-      iconUrl: "src/assets/air.png",
-      iconSize: [80, 80],
-    });
-    const openHistory = ref(false);
-    const carrousels = ref([""]);
-    const count = ref();
-    const search = ref("");
-    const river = ref();
-    const id = ref();
-
-    const searchRivers = async () => {
-      if (search.value !== "") {
-        await fetch(
-          `http://localhost:8080/river/search?location=${search.value}`,
-          {
-            method: "GET",
-          }
-        )
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Network response was not ok");
-            }
-            return response.json();
-          })
-          .then((data) => {
-            river.value = data;
-            zoom.value = 20;
-            center.value = [river.value.latitude, river.value.longitude];
-            console.log(center.value);
-            console.log(zoom.value);
-            console.log(river.value);
-          })
-          .catch((error) => {
-            Swal.fire({
-              title: "Gagal!",
-              text: "Lokasi tidak ditemukan!",
-              icon: "error",
-              confirmButtonColor: "#2d3e50",
-            });
-            console.error(error);
-          });
-      }
-    };
-
-    const ws = new WebSocket("ws://localhost:8080/river/ws");
-
-    ws.onopen = function (event) {
-      console.log("WebSocket connection opened", event);
-    };
-
-    ws.onmessage = function (event) {
-      const data = JSON.parse(event.data);
-      const index = markers.value.findIndex((marker) => marker.id === data.id);
-      if (index !== -1) {
-        const marker = markers.value[index];
-        marker.height = data.height;
-        marker.status = data.status;
-        marker.popupContent = markerPopupContent(marker);
-        markers.value.splice(index, 1, { ...marker }); // trigger reactivity
-      }
-    };
-
-    onMounted(async () => {
-      try {
-        const response = await fetch("http://localhost:8080/carrousel", {
-          method: "GET",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch carrousels");
-        }
-
-        const data = await response.json();
-        carrousels.value = data;
-      } catch (error) {
-        console.error(error);
-      }
-
-      await fetch("http://localhost:8080/river", {
-        method: "GET",
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          markers.value = data.map((marker) => ({
-            ...marker,
-            popupContent: markerPopupContent(marker),
-          }));
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-
-      await fetch("http://localhost:8080/river/total", {
-        method: "GET",
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          count.value = data;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    });
-
-    const markerPopupContent = (marker) => {
-      return `
-        <div class="marker-popup">
-          <div class="marker-info">
-            <span>Lokasi:</span> ${marker.location}<br>
-            <span>Tinggi:</span> ${marker.height}<br>
-            <span>Status:</span> ${marker.status}<br>
-            <span>History:</span> <button class="history-button" onclick="openHistoryPopUp('${marker.id}')">Lihat</button>
-          </div>
-      </div>
-        `;
-    };
-
-    window.openHistoryPopUp = (riverId) => {
-      id.value = riverId;
-      openHistory.value = true;
-    };
-
-    const markersWithPopupContent = computed(() => {
-      if (markers.value.length > 0) {
-        return markers.value.map((marker) => ({
-          ...marker,
-          popupContent: markerPopupContent(marker),
-        }));
-      }
-
-      return [];
-    });
-
-    return {
-      zoom,
-      markers,
-      openHistory,
-      markerIcon,
-      markersWithPopupContent,
-      carrousels,
-      count,
-      search,
-      searchRivers,
-      river,
-      center,
-      id,
-    };
-  },
-  computed: {
-    infoMessage() {
-      return `Dari ${this.count} lokasi pemantauan terdapat sebanyak ${this.countBahayaRivers} lokasi pantau yang airnya meluap`;
-    },
-    countBahayaRivers() {
-      return this.markers.filter((marker) => marker.status === "Bahaya").length;
-    },
-    getMarkerIcon() {
-      return function (status) {
-        let iconUrl = "";
-        let iconSize = [60, 60];
-
-        switch (status) {
-          case "Bahaya":
-            iconUrl = "src/assets/red.png";
-            break;
-          case "Siaga":
-            iconUrl = "src/assets/yel.png";
-            break;
-          case "Aman":
-            iconUrl = "src/assets/blue.png";
-            break;
-        }
-
-        return L.icon({
-          iconUrl: iconUrl,
-          iconSize: iconSize,
-        });
-      };
-    },
-  },
-  components: {
-    LMap,
-    LTileLayer,
-    LIcon,
-    LMarker,
-    LPopup,
-    History,
-  },
-});
-</script>

@@ -2,7 +2,7 @@
   <div class="profile">
     <div class="profile-header">
       <div class="text">
-        <h2>Profile</h2>
+        <h2>Profil</h2>
         <h3>Lihat informasi seputar profilmu</h3>
       </div>
     </div>
@@ -37,7 +37,7 @@
             <i class="fa fa-home text-center mr-1"></i>
             Akun
           </a>
-          <!-- <a
+          <a
             class="nav-link"
             :class="{ active: password }"
             id="password-tab"
@@ -49,7 +49,7 @@
           >
             <i class="fa fa-key text-center mr-1"></i>
             Password
-          </a> -->
+          </a>
           <a
             class="nav-link"
             :class="{ active: foto }"
@@ -101,22 +101,12 @@
               </div>
               <div class="col-md-6">
                 <div class="form-group">
-                  <label>Phone number</label>
+                  <label>Nomor Ponsel</label>
                   <input
                     type="text"
                     class="form-control"
                     v-model="user.phone"
-                    required
-                  />
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label>Language</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="user.language"
+                    @input="data.phone = data.phone.replace(/\D/g, '')"
                     required
                   />
                 </div>
@@ -128,7 +118,7 @@
           </div>
         </div>
 
-        <!-- <div v-if="password">
+        <div v-if="password">
           <div
             class="tab-pane fade show active"
             id="password"
@@ -139,22 +129,37 @@
             <div class="row">
               <div class="col-md-6">
                 <div class="form-group">
-                  <label>Old password</label>
-                  <input type="password" class="form-control" />
+                  <label>Password Lama</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    v-model="changePassword.currentPassword"
+                    required
+                  />
                 </div>
               </div>
             </div>
             <div class="row">
               <div class="col-md-6">
                 <div class="form-group">
-                  <label>New password</label>
-                  <input type="password" class="form-control" />
+                  <label>Password Baru</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    v-model="changePassword.newPassword"
+                    required
+                  />
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="form-group">
-                  <label>Confirm new password</label>
-                  <input type="password" class="form-control" />
+                  <label>Konfirmasi Password Baru</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    v-model="changePassword.confirmPassword"
+                    required
+                  />
                 </div>
               </div>
             </div>
@@ -162,7 +167,7 @@
               <button class="btn-simpan" @click="editPassword">Simpan</button>
             </div>
           </div>
-        </div> -->
+        </div>
         <div v-if="foto">
           <div
             class="tab-pane fade show active"
@@ -189,7 +194,7 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  <label>Select a new profile picture</label>
+                  <label>Pilih profile picture baru</label>
                   <input
                     type="file"
                     class="file form-control"
@@ -382,7 +387,6 @@ export default {
       password: "",
       email: "",
       phone: "",
-      language: "",
       profile: "",
       changed_at: new Date().toLocaleDateString(),
     });
@@ -396,6 +400,12 @@ export default {
       blob: "",
       path: "../client/src/assets/profile",
       filename: "",
+    });
+
+    const changePassword = reactive({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     });
 
     const imagePreview = ref(null);
@@ -432,24 +442,9 @@ export default {
               password: res.password,
               email: res.email,
               phone: res.phone,
-              language: res.language,
               profile: res.profile,
             });
-          });
-      } catch (error) {
-        console.log(error);
-      }
-    });
 
-    onMounted(async () => {
-      try {
-        await fetch("http://localhost:8080/user", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        })
-          .then((response) => response.json())
-          .then((res) => {
             Object.assign(rightProfile, {
               username: res.username,
               profile: res.profile,
@@ -460,7 +455,80 @@ export default {
       }
     });
 
-    const editPassword = async () => {};
+    const editPassword = async () => {
+      if (
+        changePassword.currentPassword == "" ||
+        changePassword.newPassword == "" ||
+        changePassword.confirmPassword == ""
+      ) {
+        Swal.fire({
+          title: "Gagal!",
+          text: "Lengkapi field data!",
+          icon: "error",
+          confirmButtonColor: "#2d3e50",
+          confirmButtonText: "<div style='color: white'>" + "OK" + "</div>",
+        });
+        return;
+      } else if (changePassword.newPassword.length < 8) {
+        Swal.fire({
+          title: "Gagal!",
+          text: "Password minimal 8 karakter!",
+          icon: "error",
+          confirmButtonColor: "#2d3e50",
+          confirmButtonText: "<div style='color: white'>" + "OK" + "</div>",
+        });
+        return;
+      } else if (changePassword.newPassword != changePassword.confirmPassword) {
+        Swal.fire({
+          title: "Gagal!",
+          text: "Password tidak sesuai!",
+          icon: "error",
+          confirmButtonColor: "#2d3e50",
+          confirmButtonText: "<div style='color: white'>" + "OK" + "</div>",
+        });
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:8080/user/password", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: user.email,
+            currentPassword: changePassword.currentPassword,
+            newPassword: changePassword.newPassword,
+          }),
+        });
+        if (!res.ok) {
+          throw new Error();
+        } else {
+          await Swal.fire({
+            title: "Berhasil!",
+            text: "Berhasil mengubah password",
+            icon: "success",
+            confirmButtonColor: "#2d3e50",
+            confirmButtonText: "<div style='color: white'>" + "OK" + "</div>",
+          });
+          clearPassword();
+        }
+      } catch (error) {
+        Swal.fire({
+          title: "Gagal!",
+          text: "Password salah!",
+          icon: "error",
+          confirmButtonColor: "#2d3e50",
+          confirmButtonText: "<div style='color: white'>" + "OK" + "</div>",
+        });
+        clearPassword();
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    const clearPassword = async () => {
+      changePassword.confirmPassword = "";
+      changePassword.currentPassword = "";
+      changePassword.newPassword = "";
+    };
 
     const editProfile = async () => {
       if (user.username == "") {
@@ -469,6 +537,7 @@ export default {
           text: "Lengkapi field data!",
           icon: "error",
           confirmButtonColor: "#2d3e50",
+          confirmButtonText: "<div style='color: white'>" + "OK" + "</div>",
         });
         return;
       }
@@ -489,6 +558,7 @@ export default {
             text: "Profile berhasil diedit",
             icon: "success",
             confirmButtonColor: "#2d3e50",
+            confirmButtonText: "<div style='color: white'>" + "OK" + "</div>",
           });
           router.go(0);
         } else {
@@ -500,6 +570,7 @@ export default {
           text: "Tidak ada data yang diedit",
           icon: "error",
           confirmButtonColor: "#2d3e50",
+          confirmButtonText: "<div style='color: white'>" + "OK" + "</div>",
         });
         console.error("Error fetching data:", error);
       }
@@ -513,6 +584,7 @@ export default {
           text: "Gambar belum ditambahkan",
           icon: "error",
           confirmButtonColor: "#2d3e50",
+          confirmButtonText: "<div style='color: white'>" + "OK" + "</div>",
         });
         console.log("Please fill in all fields.");
         return;
@@ -550,6 +622,7 @@ export default {
             text: "Profile berhasil diedit",
             icon: "success",
             confirmButtonColor: "#2d3e50",
+            confirmButtonText: "<div style='color: white'>" + "OK" + "</div>",
           });
           router.go(0);
         } else {
@@ -558,9 +631,10 @@ export default {
       } catch (error) {
         Swal.fire({
           title: "Gagal!",
-          text: "Tidak ada data yang diedit",
+          text: "Profile gagal diedit",
           icon: "error",
           confirmButtonColor: "#2d3e50",
+          confirmButtonText: "<div style='color: white'>" + "OK" + "</div>",
         });
         console.error("Error fetching data:", error);
       }
@@ -582,6 +656,7 @@ export default {
       router,
       editPassword,
       rightProfile,
+      changePassword,
     };
   },
 };

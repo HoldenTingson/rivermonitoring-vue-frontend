@@ -3,7 +3,10 @@
     <div class="report-header">
       <div class="report-header-text">
         <h2>Laporan</h2>
-        <h3>Kirim laporan seputar banjir yang terjadi di Kota Pekanbaru</h3>
+        <h3>
+          Kirim laporan seputar masalah yang berhubungan dengan banjir di Kota
+          Pekanbaru
+        </h3>
       </div>
     </div>
     <div class="report-container">
@@ -12,21 +15,21 @@
           <h3 class="title">Go Banjir</h3>
           <p class="text">
             Kami bertujuan untuk memberikan informasi yang akurat dan terkini
-            mengenai ketinggian air sungai kepada masyarakat.
+            mengenai ketinggian air kepada masyarakat.
           </p>
 
           <div class="info">
             <div class="information">
-              <img src="src/assets/location.png" class="icon" alt="" />
-              <p>Politeknik Caltex Riau</p>
+              <img src="/src/assets/location.png" class="icon" alt="" />
+              <p>BPBD Provinsi Riau</p>
             </div>
             <div class="information">
-              <img src="src/assets//email.png" class="icon" alt="" />
-              <p>kelompok6@mahasiswa.pcr.ac.id</p>
+              <img src="/src/assets/email.png" class="icon" alt="" />
+              <p>bpbd_riau@yahoo.co.id</p>
             </div>
             <div class="information">
-              <img src="src/assets//phone.png" class="icon" alt="" />
-              <p>123-456-789</p>
+              <img src="/src/assets/phone.png" class="icon" alt="" />
+              <p>0811-7612-000</p>
             </div>
           </div>
 
@@ -57,46 +60,24 @@
             <h3 class="title">Hubungi Kami</h3>
             <div class="input-container">
               <input
-                v-model="data.name"
-                type="text"
-                name="name"
-                class="input"
-                @focus="focusFunc"
-                @blur="blurFunc"
-                required
-              />
-              <label for="">Nama</label>
-              <span>Nama</span>
-            </div>
-            <div class="input-container">
-              <input
-                v-model="data.email"
-                type="email"
-                name="email"
-                class="input"
-                @focus="focusFunc"
-                @blur="blurFunc"
-                required
-              />
-              <label for="">Email</label>
-              <span>Email</span>
-            </div>
-            <div class="input-container">
-              <input
                 v-model="data.phone"
                 type="tel"
                 name="phone"
                 class="input"
                 @focus="focusFunc"
                 @blur="blurFunc"
+                @input="data.phone = data.phone.replace(/\D/g, '')"
                 required
               />
               <label for="">Nomor Ponsel</label>
               <span>Nomor Ponsel</span>
             </div>
+            <div v-if="phoneNumberError" class="error_message">
+              {{ phoneNumberError }}
+            </div>
             <div class="input-container textarea">
               <textarea
-                v-model="data.title"
+                v-model="data.content"
                 name="message"
                 class="input"
                 @focus="focusFunc"
@@ -106,13 +87,21 @@
               <label for="">Pesan</label>
               <span>Pesan</span>
             </div>
-            <input
-              type="file"
-              class="file form-control"
-              accept="image/*"
-              required
-              @change="handleFileChange"
-            />
+            <div v-if="messageError" class="error_message">
+              {{ messageError }}
+            </div>
+            <div class="input-container">
+              <input
+                type="file"
+                class="file form-control"
+                accept="image/*"
+                required
+                @change="handleFileChange"
+              />
+            </div>
+            <div v-if="attachmentError" class="error_message">
+              {{ attachmentError }}
+            </div>
             <button type="submit" class="btn btn-submit">Submit</button>
           </form>
         </div>
@@ -122,18 +111,23 @@
 </template>
 
 <script>
-import { reactive } from "vue";
+import { reactive, ref, computed } from "vue";
 import Swal from "sweetalert2";
 import { useRouter } from "vue-router";
+
 export default {
   name: "Report",
   setup() {
+    const router = useRouter();
+
+    const attachmentError = ref("");
+
     const data = reactive({
       name: "",
       email: "",
       phone: "",
-      title: "",
       content: "",
+      attachment: "",
       user_id: 0,
     });
 
@@ -143,108 +137,180 @@ export default {
       filename: "",
     });
 
-    const router = useRouter();
+    const phoneNumberError = ref("");
+    const messageError = ref("");
 
-    const timestamp = Date.now(); // Generate a timestamp
+    const computedPhoneError = computed(() => phoneNumberError.value);
+    const computedMessageError = computed(() => messageError.value);
 
     const handleFileChange = (event) => {
-      const file = event.target.files[0]; // Get the first selected file
+      const file = event.target.files[0];
+      attachmentError.value = "";
+      if (!file) return;
 
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        attachmentError.value = "Attachment file size cannot exceed 5MB";
+        event.target.value = "";
+        return;
+      }
+      const timestamp = Date.now();
       const reader = new FileReader();
+
       reader.onload = () => {
-        image.blob = reader.result; // Store the file content as a data URL in data.content
+        image.blob = reader.result;
         image.filename = `${timestamp}_${file.name}`;
-        data.content = `${timestamp}_${file.name}`;
+        data.attachment = `${timestamp}_${file.name}`;
       };
-      reader.readAsDataURL(file); // Read the file as a data URL
+
+      reader.readAsDataURL(file);
+    };
+
+    const validatePhoneNumber = () => {
+      phoneNumberError.value = "";
+
+      if (!data.phone) {
+        phoneNumberError.value = "Phone number is required";
+        return false;
+      }
+
+      if (data.phone.length < 12) {
+        phoneNumberError.value = "Phone number must be at least 12 digits long";
+        return false;
+      }
+
+      if (data.phone.length > 15) {
+        phoneNumberError.value = "Phone number cannot exceed 15 digits long";
+        return false;
+      }
+
+      return true;
+    };
+
+    const validateMessage = () => {
+      messageError.value = "";
+
+      if (!data.content) {
+        messageError.value = "Message is required";
+        return false;
+      }
+
+      if (data.content.length > 255) {
+        messageError.value = "Message cannot exceed 255 characters long";
+        return false;
+      }
+
+      return true;
+    };
+
+    const clearErrors = () => {
+      phoneNumberError.value = "";
+      messageError.value = "";
+    };
+
+    const focusFunc = (event) => {
+      const parent = event.target.parentNode;
+      parent.classList.add("focus");
+    };
+
+    const blurFunc = (event) => {
+      const parent = event.target.parentNode;
+      if (event.target.value === "") {
+        parent.classList.remove("focus");
+      }
     };
 
     const submit = async () => {
+      clearErrors();
+
+      const isPhoneValid = validatePhoneNumber();
+      const isMessageValid = validateMessage();
+
+      if (!isPhoneValid || !isMessageValid) {
+        return;
+      }
+
       try {
-        await fetch("http://localhost:8080/user", {
+        // Get user data
+        const userResponse = await fetch("http://localhost:8080/user", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-        })
-          .then((response) => response.json())
-          .then((res) => {
-            Object.assign(data, {
-              user_id: res.id,
-            });
-          });
-      } catch (error) {
-        console.log(error);
-      }
-
-      try {
-        const res = await fetch("http://localhost:8080/admin/upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(image),
-          credentials: "include",
         });
-        if (!res.ok) {
-          throw new Error();
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
 
-      try {
-        const res = await fetch("http://localhost:8080/report", {
+        if (!userResponse.ok) {
+          throw new Error("Failed to get user data");
+        }
+
+        const userData = await userResponse.json();
+        Object.assign(data, {
+          user_id: userData.id,
+          name: userData.username,
+          email: userData.email,
+        });
+
+        // Upload image
+        const uploadResponse = await fetch(
+          "http://localhost:8080/admin/upload",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(image),
+            credentials: "include",
+          }
+        );
+
+        if (!uploadResponse.ok) {
+          throw new Error("Failed to upload image");
+        }
+
+        // Submit report
+        const reportResponse = await fetch("http://localhost:8080/report", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
           credentials: "include",
         });
 
-        if (!res.ok) {
-          throw new Error();
-        } else {
-          await Swal.fire({
-            title: "Berhasil!",
-            text: "Report anda berhasil terkirim",
-            icon: "success",
-            confirmButtonColor: "#2d3e50",
-          });
-          router.go(0);
+        if (!reportResponse.ok) {
+          throw new Error("Failed to submit report");
         }
+
+        await Swal.fire({
+          title: "Berhasil!",
+          text: "Report anda berhasil terkirim",
+          icon: "success",
+          confirmButtonColor: "#2d3e50",
+          confirmButtonText: "<div style='color: white'>OK</div>",
+        });
+
+        router.go(0);
       } catch (error) {
+        console.error("Error:", error);
         Swal.fire({
           title: "Gagal!",
           text: "Silahkan login terlebih dahulu!",
           icon: "error",
           confirmButtonColor: "#2d3e50",
+          confirmButtonText: "<div style='color: white'>OK</div>",
         });
-        console.error("Error fetching data:", error);
       }
     };
+
     return {
-      submit,
       data,
-      handleFileChange,
       image,
-      router,
+      phoneNumberError: computedPhoneError,
+      messageError: computedMessageError,
+      attachmentError,
+      handleFileChange,
+      submit,
+      focusFunc,
+      blurFunc,
+      validatePhoneNumber,
+      validateMessage,
+      clearErrors,
     };
-  },
-  mounted() {
-    const inputs = document.querySelectorAll(".input");
-    inputs.forEach((input) => {
-      input.addEventListener("focus", this.focusFunc);
-      input.addEventListener("blur", this.blurFunc);
-    });
-  },
-  methods: {
-    focusFunc(event) {
-      const parent = event.target.parentNode;
-      parent.classList.add("focus");
-    },
-    blurFunc(event) {
-      const parent = event.target.parentNode;
-      if (event.target.value === "") {
-        parent.classList.remove("focus");
-      }
-    },
   },
 };
 </script>
@@ -358,10 +424,6 @@ form {
   transition: 0.3s;
 }
 
-.input-container.textarea {
-  margin-bottom: 10px;
-}
-
 textarea.input {
   padding: 0.8rem 1.2rem;
   min-height: 130px;
@@ -398,10 +460,10 @@ textarea.input {
   outline: none;
   cursor: pointer;
   transition: 0.3s;
-  margin: 0;
   width: 100%;
   margin: 1rem 0;
   height: 40.74px;
+  margin-top: 10px;
 }
 
 .btn-submit:hover {
@@ -493,6 +555,12 @@ textarea.input {
 .social-icons {
   display: flex;
   margin-top: 0.5rem;
+}
+
+.error_message {
+  color: #e74c3c;
+  font-size: 11px;
+  margin-top: 5px;
 }
 
 .social-icons a {

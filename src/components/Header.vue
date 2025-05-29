@@ -1,12 +1,9 @@
 <template>
   <div class="wrapper">
     <div class="container-fluid">
-      <nav
-        class="navbar navbar-expand-md navbar-light fixed-top"
-        :class="{ scrolled: isScrolled }"
-      >
+      <nav class="navbar navbar-expand-md navbar-light fixed-top">
         <div class="logo">
-          <img src="/src/assets/pekanbaru.png" alt="Flood Logo" />
+          <img src="/src/assets/bpbdriau.png" alt="Flood Logo" />
           <span class="logo-text">Go Banjir</span>
         </div>
         <button
@@ -26,22 +23,19 @@
         >
           <ul class="navbar-nav" :class="{ logout: auth }">
             <li class="nav-item">
-              <RouterLink class="nav-link" to="/">Home</RouterLink>
+              <RouterLink class="nav-link" to="/">Beranda</RouterLink>
             </li>
             <li class="nav-item">
-              <RouterLink class="nav-link" to="/river">River</RouterLink>
+              <RouterLink class="nav-link" to="/river">Titik Air</RouterLink>
             </li>
             <li class="nav-item">
-              <RouterLink class="nav-link" to="/news">News</RouterLink>
-            </li>
-            <li class="nav-item">
-              <RouterLink class="nav-link" to="/report">Report</RouterLink>
+              <RouterLink class="nav-link" to="/report">Laporan</RouterLink>
             </li>
             <li class="nav-item">
               <RouterLink class="nav-link" to="/faq">FAQ</RouterLink>
             </li>
             <li class="nav-item">
-              <RouterLink class="nav-link" to="/gallery">Gallery</RouterLink>
+              <RouterLink class="nav-link" to="/gallery">Galeri</RouterLink>
             </li>
           </ul>
         </div>
@@ -74,7 +68,7 @@
             </li>
           </ul>
         </div>
-        <div class="sub-menu-wrap" :class="{ open: openProfile }">
+        <div class="sub-menu-wrap" :class="{ open: openProfile }" ref="modal">
           <div class="sub-menu">
             <div class="user-info">
               <img
@@ -89,7 +83,7 @@
               @click="toggleProfile"
             >
               <i class="fa-solid fa-user"></i>
-              <p>Profile Information</p>
+              <p>Profil User</p>
               <span>></span>
             </RouterLink>
             <a class="sub-menu-link" @click="logout">
@@ -237,10 +231,11 @@
   z-index: 200;
   height: 70px;
   padding-left: 7px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .navbar.scrolled {
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* Box shadow */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
 
 .navbar_container {
@@ -260,6 +255,7 @@
 .logo {
   display: flex;
   align-items: center;
+  padding: 10px;
 }
 
 .logo img {
@@ -267,6 +263,7 @@
 }
 
 .logo-text {
+  margin-left: 10px;
   font-family: "Montserrat", sans-serif;
   font-size: 26px;
   color: black;
@@ -362,51 +359,38 @@
 </style>
 
 <script>
-import { ref, computed, reactive, onMounted, onBeforeUnmount } from "vue";
-import { useStore } from "vuex";
 import Swal from "sweetalert2";
-import { useRouter } from "vue-router";
 
 export default {
   name: "Nav",
   data() {
     return {
       isScrolled: false,
+      openProfile: false,
+      user: {
+        id: "",
+        username: "",
+        password: "",
+        email: "",
+        phone: "",
+        language: "",
+        profile: "",
+      },
     };
   },
-
-  mounted() {
-    window.addEventListener("scroll", this.handleScroll);
-  },
-  beforeDestroy() {
-    window.removeEventListener("scroll", this.handleScroll);
+  computed: {
+    auth() {
+      return this.$store.state.authenticated;
+    },
   },
   methods: {
-    handleScroll() {
-      this.isScrolled = window.pageYOffset > 0;
-    },
     openLoginForm() {
       this.$emit("openLoginForm");
     },
     openRegisterForm() {
       this.$emit("openRegisterForm");
     },
-  },
-  setup() {
-    const store = useStore();
-    const router = useRouter();
-    const auth = computed(() => store.state.authenticated);
-    const user = reactive({
-      id: "",
-      username: "",
-      password: "",
-      email: "",
-      phone: "",
-      language: "",
-      profile: "",
-    });
-
-    onMounted(async () => {
+    async fetchUserData() {
       try {
         const response = await fetch("http://localhost:8080/user", {
           method: "GET",
@@ -419,28 +403,17 @@ export default {
         }
 
         const res = await response.json();
-
-        Object.assign(user, {
-          id: res.id,
-          username: res.username,
-          password: res.password,
-          email: res.email,
-          phone: res.phone,
-          language: res.language,
-          profile: res.profile,
-        });
-
-        await store.dispatch("setAuth", true);
+        this.user = { ...res };
+        await this.$store.dispatch("setAuth", true);
       } catch (error) {
-        await store.dispatch("setAuth", false);
+        await this.$store.dispatch("setAuth", false);
       }
-    });
-
-    const toggleProfile = () => {
-      openProfile.value = !openProfile.value;
-    };
-
-    const logout = async () => {
+    },
+    toggleProfile() {
+      this.openProfile = !this.openProfile;
+    },
+    async logout() {
+      this.toggleProfile();
       Swal.fire({
         title: "Apakah anda yakin ingin logout?",
         text: "Anda akan keluar dari akun anda!",
@@ -448,8 +421,8 @@ export default {
         showCancelButton: true,
         confirmButtonColor: "#2d3e50",
         cancelButtonColor: "#d33",
-        cancelButtonText: "Tidak",
-        confirmButtonText: "Ya",
+        cancelButtonText: "<div style='color:white'>" + "Tidak" + "</div>",
+        confirmButtonText: "<div style='color:white'>" + "Ya" + "</div>",
       }).then(async (result) => {
         if (result.isConfirmed) {
           await fetch("http://localhost:8080/user/logout", {
@@ -457,30 +430,25 @@ export default {
             headers: { "Content-Type": "application/json" },
             credentials: "include",
           });
-          toggleProfile();
-          await router.push("/");
-          await store.dispatch("setAuth", false);
+
+          await this.$router.push("/");
+          await this.$store.dispatch("setAuth", false);
         }
       });
-    };
-
-    const openProfile = ref(false);
-
-    const handleClickOutside = (event) => {
-      if (openProfile.value && !event.target.closest(".sub-menu-wrap")) {
-        openProfile.value = false;
+    },
+    handleClickOutside(event) {
+      if (this.$refs.modal && !this.$refs.modal.contains(event.target)) {
+        this.openProfile = false;
       }
-    };
+    },
+  },
+  mounted() {
+    this.fetchUserData();
+    document.addEventListener("click", this.handleClickOutside, true);
+  },
 
-    return {
-      openProfile,
-      auth,
-      logout,
-      user,
-      router,
-      toggleProfile,
-      handleClickOutside,
-    };
+  unmounted() {
+    document.removeEventListener("click", this.handleClickOutside, true);
   },
 };
 </script>
