@@ -1,6 +1,6 @@
 <template>
   <div class="carousel">
-    <img class="image-view" src="../assets/carrousel/bpbd.jpg" />
+    <img class="image-view" src="/assets/carrousel/bpbd.jpg" />
     <div class="carousel-overlay">
       <div class="carousel-text">
         <h1 class="carousel-title">

@@ -3,7 +3,7 @@
     <div class="container-fluid">
       <nav class="navbar navbar-expand-md navbar-light fixed-top">
         <div class="logo">
-          <img src="/src/assets/bpbdriau.png" alt="Flood Logo" />
+          <img src="/assets/bpbdriau.png" alt="Flood Logo" />
           <span class="logo-text">Go Banjir</span>
         </div>
         <button

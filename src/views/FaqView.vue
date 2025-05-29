@@ -17,7 +17,7 @@
           >
             <span class="category-title">
               <img
-                src="/src/assets/line.png"
+                src="/assets/line.png"
                 class="line"
                 v-if="category.id === activeCategory"
               />

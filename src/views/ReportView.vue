@@ -20,15 +20,15 @@
 
           <div class="info">
             <div class="information">
-              <img src="/src/assets/location.png" class="icon" alt="" />
+              <img src="/assets/location.png" class="icon" alt="" />
               <p>BPBD Provinsi Riau</p>
             </div>
             <div class="information">
-              <img src="/src/assets/email.png" class="icon" alt="" />
+              <img src="/assets/email.png" class="icon" alt="" />
               <p>bpbd_riau@yahoo.co.id</p>
             </div>
             <div class="information">
-              <img src="/src/assets/phone.png" class="icon" alt="" />
+              <img src="/assets/phone.png" class="icon" alt="" />
               <p>0811-7612-000</p>
             </div>
           </div>
