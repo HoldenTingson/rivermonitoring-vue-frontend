@@ -31,29 +31,26 @@ export default {
     const gallery = ref([]);
 
     onMounted(async () => {
-      await fetch(
-        "https://rivermonitoring-golang-backend-production.up.railway.app/gallery",
-        {
-          method: "GET",
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          gallery.value = data;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+      try {
+        const response = await fetch(
+          "https://rivermonitoring-golang-backend-production.up.railway.app/gallery"
+        );
+        const data = await response.json();
+        gallery.value = data;
+      } catch (error) {
+        console.error(error);
+      }
     });
+
+    // Move thumbUrl here inside setup
+    const thumbUrl = (filename) => {
+      return new URL(`../assets/gallery/${filename}`, import.meta.url).href;
+    };
+
     return {
       gallery,
+      thumbUrl,
     };
-  },
-
-  methods: {
-    thumbUrl(filename) {
-      return new URL(`../assets/gallery/${filename}`, import.meta.url).href;
-    },
   },
 };
 </script>
