@@ -31,9 +31,12 @@ export default {
     const gallery = ref([]);
 
     onMounted(async () => {
-      await fetch("http://localhost:8080/gallery", {
-        method: "GET",
-      })
+      await fetch(
+        "https://rivermonitoring-golang-backend-production.up.railway.app/gallery",
+        {
+          method: "GET",
+        }
+      )
         .then((response) => response.json())
         .then((data) => {
           gallery.value = data;

@@ -135,7 +135,7 @@ export default defineComponent({
 
       try {
         const response = await fetch(
-          `http://localhost:8080/river/search?location=${search.value}`,
+          `https://rivermonitoring-golang-backend-production.up.railway.app/river/search?location=${search.value}`,
           { method: "GET" }
         );
 
