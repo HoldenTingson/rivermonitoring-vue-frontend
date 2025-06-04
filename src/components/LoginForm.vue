@@ -97,12 +97,18 @@ export default {
         return;
       }
       try {
-        const res = await fetch("http://localhost:8080/user/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: this.email, password: this.password }),
-          credentials: "include",
-        });
+        const res = await fetch(
+          "https://rivermonitoring-golang-backend-production.up.railway.app/user/login",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: this.email,
+              password: this.password,
+            }),
+            credentials: "include",
+          }
+        );
         if (!res.ok) {
           throw new Error();
         } else {

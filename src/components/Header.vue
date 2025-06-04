@@ -60,7 +60,7 @@
             <li class="nav-item" v-if="auth">
               <div class="profile" @click="toggleProfile">
                 <img
-                  :src="`http://localhost:5173/src/assets/profile/${user.profile}`"
+                  :src="`/assets/profile/${user.profile}`"
                   class="user-pic"
                 />
                 <span class="username">{{ user.username }}</span>
@@ -71,9 +71,7 @@
         <div class="sub-menu-wrap" :class="{ open: openProfile }" ref="modal">
           <div class="sub-menu">
             <div class="user-info">
-              <img
-                :src="`http://localhost:5173/src/assets/profile/${user.profile}`"
-              />
+              <img :src="`/assets/profile/${user.profile}`" />
               <h3>{{ user.username }}</h3>
             </div>
             <hr />
@@ -392,11 +390,14 @@ export default {
     },
     async fetchUserData() {
       try {
-        const response = await fetch("http://localhost:8080/user", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
+        const response = await fetch(
+          "https://rivermonitoring-golang-backend-production.up.railway.app/user",
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Error fetching data");
@@ -425,11 +426,14 @@ export default {
         confirmButtonText: "<div style='color:white'>" + "Ya" + "</div>",
       }).then(async (result) => {
         if (result.isConfirmed) {
-          await fetch("http://localhost:8080/user/logout", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-          });
+          await fetch(
+            "https://rivermonitoring-golang-backend-production.up.railway.app/user/logout",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+            }
+          );
 
           await this.$router.push("/");
           await this.$store.dispatch("setAuth", false);

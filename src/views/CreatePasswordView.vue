@@ -112,16 +112,19 @@ export default {
       this.emailVerPassword = urlParams.get("evpw");
 
       try {
-        const res = await fetch("http://localhost:8080/user/resetPassword", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: this.username,
-            password: this.password,
-            emailVerPassword: this.emailVerPassword,
-          }),
-          credentials: "include",
-        });
+        const res = await fetch(
+          "https://rivermonitoring-golang-backend-production.up.railway.app/user/resetPassword",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: this.username,
+              password: this.password,
+              emailVerPassword: this.emailVerPassword,
+            }),
+            credentials: "include",
+          }
+        );
         if (!res.ok) {
           throw new Error();
         }

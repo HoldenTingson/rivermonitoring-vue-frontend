@@ -173,7 +173,7 @@ export default {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/history/time/${props.riverId}`
+          `https://rivermonitoring-golang-backend-production.up.railway.app/history/time/${props.riverId}`
         );
 
         if (!response.ok) {

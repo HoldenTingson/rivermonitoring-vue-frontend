@@ -79,12 +79,15 @@ export default {
       this.isLoading = true;
 
       try {
-        const res = await fetch("http://localhost:8080/user/sendEmail", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: this.email }),
-          credentials: "include",
-        });
+        const res = await fetch(
+          "https://rivermonitoring-golang-backend-production.up.railway.app/user/sendEmail",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: this.email }),
+            credentials: "include",
+          }
+        );
         if (!res.ok) {
           throw new Error();
         }

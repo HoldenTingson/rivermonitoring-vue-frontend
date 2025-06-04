@@ -11,10 +11,7 @@
       <div class="profile-tab-nav border-right">
         <div class="image-box p-4">
           <div class="img-circle text-center mb-3">
-            <img
-              :src="`http://localhost:5173/src/assets/profile/${rightProfile.profile}`"
-              alt="Image"
-            />
+            <img :src="`/assets/profile/${rightProfile.profile}`" alt="Image" />
           </div>
           <h4 class="profile-name text-center">{{ rightProfile.username }}</h4>
         </div>
@@ -188,7 +185,7 @@
                     />
                     <img
                       v-else
-                      :src="`http://localhost:5173/src/assets/profile/profile.png`"
+                      :src="`/assets/profile/profile.png`"
                       style="border-radius: 50%; width: 80px; height: 80px"
                     />
                   </div>
@@ -398,7 +395,7 @@ export default {
 
     const image = reactive({
       blob: "",
-      path: "../client/src/assets/profile",
+      path: "/assets/profile",
       filename: "",
     });
 
@@ -429,11 +426,14 @@ export default {
 
     onMounted(async () => {
       try {
-        await fetch("http://localhost:8080/user", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        })
+        await fetch(
+          "https://rivermonitoring-golang-backend-production.up.railway.app/user",
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          }
+        )
           .then((response) => response.json())
           .then((res) => {
             Object.assign(user, {
@@ -490,15 +490,18 @@ export default {
       }
 
       try {
-        const res = await fetch("http://localhost:8080/user/password", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: user.email,
-            currentPassword: changePassword.currentPassword,
-            newPassword: changePassword.newPassword,
-          }),
-        });
+        const res = await fetch(
+          "https://rivermonitoring-golang-backend-production.up.railway.app/user/password",
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: user.email,
+              currentPassword: changePassword.currentPassword,
+              newPassword: changePassword.newPassword,
+            }),
+          }
+        );
         if (!res.ok) {
           throw new Error();
         } else {
@@ -544,7 +547,7 @@ export default {
 
       try {
         const res = await fetch(
-          `http://localhost:8080/user/${user.id}?update=account`,
+          `https://rivermonitoring-golang-backend-production.up.railway.app/user/${user.id}?update=account`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -592,12 +595,15 @@ export default {
 
       if (image.blob !== "") {
         try {
-          const res = await fetch("http://localhost:8080/admin/upload", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(image),
-            credentials: "include",
-          });
+          const res = await fetch(
+            "https://rivermonitoring-golang-backend-production.up.railway.app/admin/upload",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(image),
+              credentials: "include",
+            }
+          );
           if (!res.ok) {
             throw new Error();
           }
@@ -608,7 +614,7 @@ export default {
 
       try {
         const res = await fetch(
-          `http://localhost:8080/user/${user.id}?update=profile`,
+          `https://rivermonitoring-golang-backend-production.up.railway.app/user/${user.id}?update=profile`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },

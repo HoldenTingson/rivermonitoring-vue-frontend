@@ -214,9 +214,12 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
-        const response = await fetch("http://localhost:8080/carrousel", {
-          method: "GET",
-        });
+        const response = await fetch(
+          "https://rivermonitoring-golang-backend-production.up.railway.app/carrousel",
+          {
+            method: "GET",
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch carrousels");
@@ -230,9 +233,12 @@ export default defineComponent({
 
       try {
         // Step 1: Fetch river data
-        const riverResponse = await fetch("http://localhost:8080/river", {
-          method: "GET",
-        });
+        const riverResponse = await fetch(
+          "https://rivermonitoring-golang-backend-production.up.railway.app/river",
+          {
+            method: "GET",
+          }
+        );
 
         if (!riverResponse.ok) {
           throw new Error("Failed to fetch river data");
@@ -265,9 +271,12 @@ export default defineComponent({
         console.error("Error fetching river data:", error);
       }
 
-      await fetch("http://localhost:8080/river/total", {
-        method: "GET",
-      })
+      await fetch(
+        "https://rivermonitoring-golang-backend-production.up.railway.app/river/total",
+        {
+          method: "GET",
+        }
+      )
         .then((response) => response.json())
         .then((data) => {
           count.value = data;
@@ -285,7 +294,7 @@ export default defineComponent({
       for (const marker of markers.value) {
         try {
           const response = await fetch(
-            `http://localhost:8080/river/status/${marker.id}`,
+            `https://rivermonitoring-golang-backend-production.up.railway.app/river/status/${marker.id}`,
             {
               method: "GET",
             }
@@ -385,13 +394,13 @@ export default defineComponent({
 
         switch (status) {
           case "Bahaya":
-            iconUrl = "src/assets/red.png";
+            iconUrl = "/assets/red.png";
             break;
           case "Siaga":
-            iconUrl = "src/assets/yel.png";
+            iconUrl = "/assets/yel.png";
             break;
           case "Aman":
-            iconUrl = "src/assets/blue.png";
+            iconUrl = "/assets/blue.png";
             break;
         }
 

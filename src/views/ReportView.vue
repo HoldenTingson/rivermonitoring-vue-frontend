@@ -133,7 +133,7 @@ export default {
 
     const image = reactive({
       blob: "",
-      path: "../client/src/assets/report",
+      path: "/assets/report",
       filename: "",
     });
 
@@ -232,11 +232,14 @@ export default {
 
       try {
         // Get user data
-        const userResponse = await fetch("http://localhost:8080/user", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
+        const userResponse = await fetch(
+          "https://rivermonitoring-golang-backend-production.up.railway.app/user",
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          }
+        );
 
         if (!userResponse.ok) {
           throw new Error("Failed to get user data");
@@ -251,7 +254,7 @@ export default {
 
         // Upload image
         const uploadResponse = await fetch(
-          "http://localhost:8080/admin/upload",
+          "https://rivermonitoring-golang-backend-production.up.railway.app/admin/upload",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -265,12 +268,15 @@ export default {
         }
 
         // Submit report
-        const reportResponse = await fetch("http://localhost:8080/report", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-          credentials: "include",
-        });
+        const reportResponse = await fetch(
+          "https://rivermonitoring-golang-backend-production.up.railway.app/report",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+            credentials: "include",
+          }
+        );
 
         if (!reportResponse.ok) {
           throw new Error("Failed to submit report");

@@ -222,7 +222,7 @@ export default {
       const encodedSortBy = encodeURIComponent(sortBy);
       try {
         await fetch(
-          `http://localhost:8080/river/sort?sortby=${encodedSortBy}`,
+          `https://rivermonitoring-golang-backend-production.up.railway.app/river/sort?sortby=${encodedSortBy}`,
           {
             method: "GET",
           }
@@ -239,9 +239,12 @@ export default {
     };
 
     onBeforeMount(async () => {
-      await fetch("http://localhost:8080/river", {
-        method: "GET",
-      })
+      await fetch(
+        "https://rivermonitoring-golang-backend-production.up.railway.app/river",
+        {
+          method: "GET",
+        }
+      )
         .then((response) => response.json())
         .then((data) => {
           rivers.value = data;
