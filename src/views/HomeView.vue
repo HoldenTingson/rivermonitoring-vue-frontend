@@ -194,7 +194,9 @@ export default defineComponent({
     //   }
     // });
 
-    const ws = new WebSocket("ws://localhost:8080/river/ws");
+    const ws = new WebSocket(
+      "wss://rivermonitoring-golang-backend-production.up.railway.app/river/ws"
+    );
 
     ws.onopen = function (event) {
       console.log("WebSocket connection opened", event);
@@ -213,24 +215,6 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      try {
-        const response = await fetch(
-          "https://rivermonitoring-golang-backend-production.up.railway.app/carrousel",
-          {
-            method: "GET",
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch carrousels");
-        }
-
-        const data = await response.json();
-        carrousels.value = data;
-      } catch (error) {
-        console.error(error);
-      }
-
       try {
         // Step 1: Fetch river data
         const riverResponse = await fetch(
