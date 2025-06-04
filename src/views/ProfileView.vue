@@ -395,7 +395,7 @@ export default {
 
     const image = reactive({
       blob: "",
-      path: "/assets/profile",
+      path: "https://gobanjirclient.netlify.app/assets/profile",
       filename: "",
     });
 
@@ -580,7 +580,6 @@ export default {
     };
 
     const editImage = async () => {
-      console.log(user.changed_at);
       if (image.blob == "") {
         Swal.fire({
           title: "Gagal!",

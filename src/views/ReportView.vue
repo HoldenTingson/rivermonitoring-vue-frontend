@@ -133,7 +133,7 @@ export default {
 
     const image = reactive({
       blob: "",
-      path: "/assets/report",
+      path: "https://gobanjirclient.netlify.app/assets/report",
       filename: "",
     });
 
