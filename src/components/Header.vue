@@ -71,7 +71,9 @@
         <div class="sub-menu-wrap" :class="{ open: openProfile }" ref="modal">
           <div class="sub-menu">
             <div class="user-info">
-              <img :src="`/assets/profile/${user.profile}`" />
+              <img
+                :src="`https://rivermonitoring-golang-backend-production.up.railway.app/uploads/profile/${user.profile}`"
+              />
               <h3>{{ user.username }}</h3>
             </div>
             <hr />

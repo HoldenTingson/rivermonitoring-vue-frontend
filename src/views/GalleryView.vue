@@ -10,7 +10,10 @@
     </div>
     <div class="gallery-page">
       <div class="gallery-panel" v-for="photo in gallery" :key="photo.id">
-        <img :src="`/assets/gallery/${photo.image}`" class="gallery-photo" />
+        <img
+          :src="`https://rivermonitoring-golang-backend-production.up.railway.app/uploads/gallery/${photo.image}`"
+          class="gallery-photo"
+        />
         <div class="gallery-overlay">
           <div class="overlay-content">
             <h5>{{ photo.date }}</h5>
