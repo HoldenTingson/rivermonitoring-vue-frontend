@@ -60,7 +60,7 @@
             <li class="nav-item" v-if="auth">
               <div class="profile" @click="toggleProfile">
                 <img
-                  :src="`/assets/profile/${user.profile}`"
+                  :src="`https://rivermonitoring-golang-backend-production.up.railway.app/uploads/profile/${user.profile}`"
                   class="user-pic"
                 />
                 <span class="username">{{ user.username }}</span>

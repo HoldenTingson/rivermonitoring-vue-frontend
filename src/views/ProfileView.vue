@@ -11,7 +11,10 @@
       <div class="profile-tab-nav border-right">
         <div class="image-box p-4">
           <div class="img-circle text-center mb-3">
-            <img :src="`/assets/profile/${rightProfile.profile}`" alt="Image" />
+            <img
+              :src="`https://rivermonitoring-golang-backend-production.up.railway.app/uploads/profile/${rightProfile.profile}`"
+              alt="Image"
+            />
           </div>
           <h4 class="profile-name text-center">{{ rightProfile.username }}</h4>
         </div>
@@ -395,7 +398,7 @@ export default {
 
     const image = reactive({
       blob: "",
-      path: "https://gobanjirclient.netlify.app/assets/profile",
+      path: "./uploads/profile",
       filename: "",
     });
 
