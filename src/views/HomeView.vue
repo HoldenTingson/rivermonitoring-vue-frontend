@@ -302,7 +302,7 @@ export default defineComponent({
         <div class="marker-popup">
           <div class="marker-info">
             <span>Lokasi:</span> ${marker.location}<br>
-            <span>Tinggi:</span> ${marker.height}<br>
+            <span>Tinggi:</span> ${marker.height} cm <br>
             <span>Status:</span> ${marker.status}<br>
             <span>Sensor:</span> ${marker.sensor}<br>
             <span>Histori:</span> <button class="history-button" onclick="openHistoryPopUp('${marker.id}')">Lihat</button>
