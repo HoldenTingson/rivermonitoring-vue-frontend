@@ -85,7 +85,7 @@
       <tbody>
         <tr v-for="river in filteredRivers" :key="river.id">
           <td>{{ river.location }}</td>
-          <td>{{ river.height }}</td>
+          <td>{{ river.height }} cm</td>
           <td>{{ river.status }}</td>
           <td>{{ river.latitude }}</td>
           <td>{{ river.longitude }}</td>
