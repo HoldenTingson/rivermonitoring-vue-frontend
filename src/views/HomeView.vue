@@ -79,15 +79,15 @@
         </div>
         <div class="notes-item">
           - Status ketinggian pada lokasi pemantauan dikatakan bahaya jika
-          tinggi air lebih dari 3 meter
+          tinggi air mencapai lebih dari 80% kapasitas maksimal
         </div>
         <div class="notes-item">
           - Status ketinggian pada lokasi pemantauan dikatakan siaga jika tinggi
-          air berada direntang 1.5 meter - 3 meter
+          air berada direntang 50% - 80% dari kapasitas maksimal
         </div>
         <div class="notes-item">
           - Status ketinggian pada lokasi pemantauan dikatakan aman jika tinggi
-          air kurang dari 1.5 meter
+          air kurang dari 50% kapasitas maksimal
         </div>
       </div>
     </div>
