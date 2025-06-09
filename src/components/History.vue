@@ -86,7 +86,7 @@ export default {
       },
       scales: {
         y: {
-          beginAtZero: false,
+          beginAtZero: true,
           ticks: {
             maxTicksLimit: 8,
             callback: function (value) {
