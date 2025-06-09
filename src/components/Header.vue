@@ -171,6 +171,7 @@
   text-decoration: none;
   color: #000000;
   margin: 12px 0;
+  cursor: pointer;
   font-weight: 350;
 }
 
