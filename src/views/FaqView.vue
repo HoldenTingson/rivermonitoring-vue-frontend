@@ -199,15 +199,16 @@ export default {
           questions: [
             {
               id: 1,
-              question: "Apa yang menyebabkan Pekanbaru banjir?",
+              question: "Kapan musim banjir biasanya terjadi di Pekanbaru?",
               answer:
-                "Secara geografis, Pekanbaru berada diantara daerah rawa-rawa dan pinggiran sungai. Hal ini membuat banjir di Jakarta disebabkan oleh 3 jenis banjir yang berbeda, yaitu banjir kiriman, banjir hujan lokal, dan banjir rob. Selain itu, pembuangan limbah ke sungai atau kanal dapat menyebabkan penyumbatan serta penyempitan sungai sehingga air lebih sulit tertampung.",
+                "Banjir di Pekanbaru umumnya terjadi pada musim hujan, yaitu sekitar bulan Oktober hingga Maret. Puncak musim hujan biasanya terjadi pada bulan November hingga Februari dimana intensitas hujan lebih tinggi.",
             },
             {
               id: 2,
-              question: "Apa itu dataran banjir (floodplain)?",
+              question:
+                "Bagaimana kondisi geografis Pekanbaru yang mempengaruhi banjir?",
               answer:
-                "Dataran banjir atau floodplain adalah wilayah daratan yang terletak bersebelahan dengan sungai yang membentang dari tepi sungai hingga dasar dinding lembah di sekitarnya. Floodplain biasanya terbentuk oleh proses pengendapan lumpur dan unsur-unsur lain yang terjadi ketika sungai meluap.",
+                "Pekanbaru terletak di dataran rendah dengan ketinggian sekitar 5-50 meter di atas permukaan laut. Kota ini dikelilingi oleh Sungai Siak dan anak-anak sungainya, serta memiliki banyak area rawa dan lahan gambut yang mudah tergenang air.",
             },
             {
               id: 3,
@@ -227,7 +228,7 @@ export default {
               id: 1,
               question:
                 "Berapa nomor telepon darurat yang bisa saya hubungi saat banjir melanda?",
-              answer: "Kamu bisa menghubungi nomor darurat 112",
+              answer: "Kamu bisa menghubungi nomor 0811-7612-000",
             },
             {
               id: 2,
@@ -239,7 +240,7 @@ export default {
             {
               id: 3,
               question:
-                "Apa yang harus saya lakukan saat menemukan genangan di Jakarta?",
+                "Apa yang harus saya lakukan saat menemukan genangan di Pekanbaru?",
               answer:
                 "Laporkan genangan banjir tersebut melalui website Go Banjir dengan fitur report. Tulis deskripsi, foto kejadian, dan kirimkan laporan.",
             },
